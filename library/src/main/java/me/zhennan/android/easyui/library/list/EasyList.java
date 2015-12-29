@@ -5,6 +5,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,8 @@ import me.zhennan.android.easyui.library.R;
  *
  */
 public class EasyList extends RelativeLayout {
+
+    final static String TAG = EasyList.class.getSimpleName();
 
     private DataProvider dataProviderCache = null;
     private ViewDecorator viewDecoratorCache = null;
@@ -52,26 +55,33 @@ public class EasyList extends RelativeLayout {
 
         // setup layout
         LayoutInflater.from(context).inflate(R.layout.easyui_easylist_layout, this, true);
-        refreshLayout = (SwipeRefreshLayout)findViewById(R.id.easyui_box_refresh);
+        refreshLayout = (SwipeRefreshLayout)findViewById(R.id.__easyui_box_refresh);
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 DataProvider provider = getDataProvider();
                 if(null == provider){
+                    Log.e(TAG, "EasyList.getViewDecorator is null");
                     throw  new IllegalArgumentException("ListFragment.getDataProvider must not be null");
+                }else{
+                    post(new Runnable() {
+                        @Override
+                        public void run() {
+                            getDataProvider().onLoadFirstPage();
+                        }
+                    });
                 }
-
-                provider.onLoadFirstPage();
             }
         });
 
-        emptyBox = (ViewGroup)findViewById(R.id.easyui_box_empty);
+        emptyBox = (ViewGroup)findViewById(R.id.__easyui_box_empty);
 
-        listView = (RecyclerView)findViewById(R.id.easyui_list_view);
+        listView = (RecyclerView)findViewById(R.id.__easyui_recycle_view);
         listView.setLayoutManager(getLayoutManager());
         listView.setAdapter(getListAdapter());
-    }
 
+        notifyDataSetChanged();
+    }
 
     public DataProvider getDataProvider(){
         return dataProviderCache;
@@ -106,8 +116,6 @@ public class EasyList extends RelativeLayout {
         listAdapter.notifyDataSetChanged();
     }
 
-
-
     boolean isEmptyViewCreated = false;
 
     /**
@@ -133,19 +141,19 @@ public class EasyList extends RelativeLayout {
     private void showEmptyView(){
         ViewDecorator decorator = getViewDecorator();
         if(null == decorator){
-            throw  new IllegalArgumentException("ListFragment.getViewDecorator must not be null");
-        }
-
-        if(!isEmptyViewCreated){
-            View emptyView = decorator.onCreateEmptyView(emptyBox);
-            if(null != emptyView){
-                emptyBox.addView(emptyView);
-                isEmptyViewCreated = true;
+            Log.e(TAG, "EasyList.getViewDecorator is null");
+        }else{
+            if(!isEmptyViewCreated){
+                View emptyView = decorator.onCreateEmptyView(emptyBox);
+                if(null != emptyView){
+                    emptyBox.addView(emptyView);
+                    isEmptyViewCreated = true;
+                }
             }
-        }
 
-        emptyBox.setVisibility(View.VISIBLE);
-        refreshLayout.setVisibility(View.INVISIBLE);
+            emptyBox.setVisibility(View.VISIBLE);
+            refreshLayout.setVisibility(View.INVISIBLE);
+        }
     }
 
     private void hideEmptyView(){
@@ -153,38 +161,41 @@ public class EasyList extends RelativeLayout {
         refreshLayout.setVisibility(View.VISIBLE);
     }
 
-    static final int LOAD_MORE = Integer.MIN_VALUE;
+    static final int LOAD_MORE = -1, LAST_ITEM = 0;
     class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
         @Override
         public int getItemCount() {
             DataProvider provider = getDataProvider();
             if(null == provider){
-                throw  new IllegalArgumentException("ListFragment.getDataProvider must not be null");
-            }
-            int count;
-            if(provider.isLastPage()) {
-                count = provider.getCount();
+                Log.e(TAG, "EasyList.getDataProvider is null");
+                return 0;
             }else{
-                count = provider.getCount() + 1;
+                return provider.getCount() + 1;
             }
-            return count;
         }
 
         @Override
         public int getItemViewType(int position) {
             DataProvider provider = getDataProvider();
             if(null == provider){
-                throw  new IllegalArgumentException("ListFragment.getDataProvider must not be null");
+                Log.e(TAG, "EasyList.getDataProvider is null");
+                return 0;
             }else{
 
                 boolean isLastPage = provider.isLastPage();
                 int count = getItemCount();
-
-                if(!isLastPage && position == count - 1){
+                if(isLastPage && position == count - 1){
+                    return LAST_ITEM;
+                }else if(!isLastPage && position == count - 1){
                     return LOAD_MORE;
-                }else{
-                    return provider.getItemViewType(position);
+                }else {
+                    int customTypeIndex = provider.getItemViewType(position);
+                    if(0 > customTypeIndex){
+                        return Math.abs(customTypeIndex) + 1;
+                    }else {
+                        return customTypeIndex + 1;
+                    }
                 }
             }
         }
@@ -193,15 +204,19 @@ public class EasyList extends RelativeLayout {
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             DataProvider provider = getDataProvider();
             if(null == provider){
-                throw new IllegalArgumentException("ListFragment.getDataProvider must not be null");
+                Log.e(TAG, "EasyList.getDataProvider is null");
+                return null;
             }
 
             ViewDecorator decorator = getViewDecorator();
             if(null == decorator){
-                throw new IllegalArgumentException("ListFragment.getViewDecorator must not be null");
+                Log.e(TAG, "EasyList.getViewDecorator is null");
+                return null;
             }
 
             switch (viewType){
+                case LAST_ITEM:
+                    return new LastItemViewHolder(decorator.onCreateLastView(parent));
                 case LOAD_MORE:
                     return new LoadMoreViewHolder(decorator.onCreateLoadMoreView(parent));
                 default:
@@ -214,19 +229,33 @@ public class EasyList extends RelativeLayout {
 
             DataProvider provider = getDataProvider();
             if(null == provider){
-                throw new IllegalArgumentException("ListFragment.getDataProvider must not be null");
-            }
+                Log.e(TAG, "EasyList.getDataProvider is null");
+            }else{
+                if(holder instanceof LoadMoreViewHolder){
+                    post(new Runnable() {
+                        @Override
+                        public void run() {
+                            getDataProvider().onLoadNextPage();
+                        }
+                    });
 
-            if(holder instanceof LoadMoreViewHolder){
-                provider.onLoadNextPage();
-            }else {
-                provider.onBindViewHolder(holder, position);
+                }else if(holder instanceof LastItemViewHolder){
+                    // do nothing
+                }else {
+                    provider.onBindViewHolder(holder, position);
+                }
             }
         }
     }
 
     class LoadMoreViewHolder extends RecyclerView.ViewHolder{
         public LoadMoreViewHolder(View itemView) {
+            super(itemView);
+        }
+    }
+
+    class LastItemViewHolder extends RecyclerView.ViewHolder{
+        public LastItemViewHolder(View itemView) {
             super(itemView);
         }
     }
@@ -241,6 +270,7 @@ public class EasyList extends RelativeLayout {
 
         View onCreateEmptyView(ViewGroup parent);
         View onCreateLoadMoreView(ViewGroup parent);
+        View onCreateLastView(ViewGroup parent);
     }
 
     public interface DataProvider{
@@ -255,6 +285,5 @@ public class EasyList extends RelativeLayout {
         void onLoadFirstPage();
         void onLoadNextPage();
     }
-
 
 }
