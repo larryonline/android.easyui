@@ -107,7 +107,7 @@ public class EasyList extends RelativeLayout {
             refreshLayout.setRefreshing(false);
         }
 
-        if( 0 == listAdapter.getItemCount()){
+        if( 0 == listAdapter.getItemCount() && (null == getDataProvider() || getDataProvider().isLastPage())){
             showEmptyView();
         }else{
             hideEmptyView();
@@ -172,7 +172,7 @@ public class EasyList extends RelativeLayout {
                 return 0;
             }else{
                 int count = provider.getCount();
-                return 0 == count? 0 : count + 1;
+                return 0 == count && provider.isLastPage()? 0 : count + 1;
             }
         }
 

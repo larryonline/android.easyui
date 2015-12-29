@@ -63,21 +63,33 @@ public class SimpleListFragment extends Fragment {
     }
 
     protected void firstPage(){
-        getSource().clear();
-        for(int i = 0; i < 5; i++){
-            getSource().add(""+i);
-        }
 
-        easyList.notifyDataSetChanged();
+        getView().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                getSource().clear();
+                for (int i = 0; i < 5; i++) {
+                    getSource().add("" + i);
+                }
+                easyList.notifyDataSetChanged();
+            }
+        }, 3000);
     }
 
     protected void nextPage(){
-        int offset = getSource().size();
-        for (int i = offset; i < offset + 5; i++){
-            getSource().add(""+i);
-        }
+        getView().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                int offset = getSource().size();
+                for (int i = offset; i < offset + 5; i++) {
+                    getSource().add("" + i);
+                }
 
-        easyList.notifyDataSetChanged();
+                easyList.notifyDataSetChanged();
+            }
+        }, 3000);
+
+
     }
 
 
@@ -112,6 +124,7 @@ public class SimpleListFragment extends Fragment {
 
         @Override
         public boolean isLastPage() {
+//            return true;
             return getSource().size() > 100;
         }
 
