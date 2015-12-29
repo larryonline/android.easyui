@@ -4,7 +4,7 @@ apply plugin: "com.jfrog.bintray"
 def siteUrl = 'https://github.com/larryonline/android.easyui'      // Homepage URL of the library
 def gitUrl = 'https://github.com/larryonline/android.easyui.git'   // Git repository URL
 
-version="1.0.0"
+version="1.0.1"
 group = "me.zhennan.android.easyui"                      // Maven Group ID for the artifact
 
 
