@@ -21,6 +21,14 @@ import me.zhennan.android.easyui.library.list.EasyListViewDecorator;
 public class SimpleListFragment extends Fragment {
 
 
+    private List<String> source = null;
+    protected List<String> getSource(){
+        if(null == source){
+            source = new ArrayList<>();
+        }
+        return source;
+    }
+
     private EasyList easyList = null;
 
     @Nullable
@@ -34,18 +42,49 @@ public class SimpleListFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         easyList = (EasyList)view.findViewById(R.id.easy_list);
         easyList.setDataProvider(new DP());
-        easyList.setViewDecorator(new VD());
+        easyList.setViewDecorator(new EasyListViewDecorator() {
+            @Override
+            protected int getEmptyViewResId() {
+                return R.layout.empty_view;
+            }
+
+            @Override
+            protected int getLastViewResId() {
+                return R.layout.last_view;
+            }
+
+            @Override
+            protected int getLoadMoreViewResId() {
+                return R.layout.more_view;
+            }
+        });
+
+        firstPage();
     }
+
+    protected void firstPage(){
+        getSource().clear();
+        for(int i = 0; i < 5; i++){
+            getSource().add(""+i);
+        }
+
+        easyList.notifyDataSetChanged();
+    }
+
+    protected void nextPage(){
+        int offset = getSource().size();
+        for (int i = offset; i < offset + 5; i++){
+            getSource().add(""+i);
+        }
+
+        easyList.notifyDataSetChanged();
+    }
+
+
 
     class DP implements EasyList.DataProvider{
 
-        private List<String> source = null;
-        protected List<String> getSource(){
-            if(null == source){
-                source = new ArrayList<>();
-            }
-            return source;
-        }
+
 
         @Override
         public int getCount() {
@@ -78,40 +117,12 @@ public class SimpleListFragment extends Fragment {
 
         @Override
         public void onLoadFirstPage() {
-            getSource().clear();
-            for(int i = 0; i < 5; i++){
-                getSource().add(""+i);
-            }
-
-            easyList.notifyDataSetChanged();
+            firstPage();
         }
 
         @Override
         public void onLoadNextPage() {
-            int offset = getSource().size();
-            for (int i = offset; i < offset + 5; i++){
-                getSource().add(""+i);
-            }
-
-            easyList.notifyDataSetChanged();
-        }
-    }
-
-    class VD extends EasyListViewDecorator{
-
-        @Override
-        protected int getEmptyViewResId() {
-            return R.layout.empty_view;
-        }
-
-        @Override
-        protected int getLastViewResId() {
-            return R.layout.more_view;
-        }
-
-        @Override
-        protected int getLoadMoreViewResId() {
-            return R.layout.last_view;
+            nextPage();
         }
     }
 

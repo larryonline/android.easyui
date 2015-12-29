@@ -79,8 +79,6 @@ public class EasyList extends RelativeLayout {
         listView = (RecyclerView)findViewById(R.id.__easyui_recycle_view);
         listView.setLayoutManager(getLayoutManager());
         listView.setAdapter(getListAdapter());
-
-        notifyDataSetChanged();
     }
 
     public DataProvider getDataProvider(){
@@ -89,6 +87,7 @@ public class EasyList extends RelativeLayout {
 
     public void setDataProvider(DataProvider provider){
         dataProviderCache = provider;
+        notifyDataSetChanged();
     }
 
     public ViewDecorator getViewDecorator(){
@@ -97,6 +96,7 @@ public class EasyList extends RelativeLayout {
 
     public void setViewDecorator(ViewDecorator decorator){
         viewDecoratorCache = decorator;
+        notifyDataSetChanged();
     }
 
     /**
@@ -171,7 +171,8 @@ public class EasyList extends RelativeLayout {
                 Log.e(TAG, "EasyList.getDataProvider is null");
                 return 0;
             }else{
-                return provider.getCount() + 1;
+                int count = provider.getCount();
+                return 0 == count? 0 : count + 1;
             }
         }
 
