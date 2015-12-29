@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.zhennan.android.easyui.library.list.EasyList;
+import me.zhennan.android.easyui.library.list.EasyListViewDecorator;
 
 /**
  * Created by zhangzhennan on 15/12/28.
@@ -96,25 +97,21 @@ public class SimpleListFragment extends Fragment {
         }
     }
 
-    class VD implements EasyList.ViewDecorator{
+    class VD extends EasyListViewDecorator{
+
         @Override
-        public RecyclerView.LayoutManager getLayoutManager() {
-            return null;
+        protected int getEmptyViewResId() {
+            return R.layout.empty_view;
         }
 
         @Override
-        public View onCreateEmptyView(ViewGroup parent) {
-            return LayoutInflater.from(parent.getContext()).inflate(R.layout.empty_view, parent, false);
+        protected int getLastViewResId() {
+            return R.layout.more_view;
         }
 
         @Override
-        public View onCreateLoadMoreView(ViewGroup parent) {
-            return LayoutInflater.from(parent.getContext()).inflate(R.layout.more_view, parent, false);
-        }
-
-        @Override
-        public View onCreateLastView(ViewGroup parent) {
-            return LayoutInflater.from(parent.getContext()).inflate(R.layout.last_view, parent, false);
+        protected int getLoadMoreViewResId() {
+            return R.layout.last_view;
         }
     }
 
