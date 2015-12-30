@@ -188,7 +188,7 @@ public class EasyList extends RelativeLayout {
         refreshLayout.setVisibility(View.VISIBLE);
     }
 
-    static final int LOAD_MORE = -1, LAST_ITEM = 0;
+    static final int LOAD_MORE = Integer.MIN_VALUE, LAST_ITEM = LOAD_MORE + 1;
     class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
         @Override
@@ -219,10 +219,10 @@ public class EasyList extends RelativeLayout {
                     return LOAD_MORE;
                 }else {
                     int customTypeIndex = provider.getItemViewType(position);
-                    if(0 > customTypeIndex){
-                        return Math.abs(customTypeIndex) + 1;
-                    }else {
-                        return customTypeIndex + 1;
+                    if(customTypeIndex == LOAD_MORE || customTypeIndex == LAST_ITEM){
+                        throw new RuntimeException("ViewType illegal");
+                    }else{
+                        return customTypeIndex;
                     }
                 }
             }
