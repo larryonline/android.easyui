@@ -16,7 +16,12 @@ public abstract class EasyListViewDecorator implements EasyList.ViewDecorator {
     }
 
     @Override
-    public int getItemGapPixelSize() {
+    public int getHorizontalGapPixelSize() {
+        return 0;
+    }
+
+    @Override
+    public int getVerticalGapPixelSize() {
         return 0;
     }
 
