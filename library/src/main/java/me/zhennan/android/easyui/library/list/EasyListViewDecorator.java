@@ -11,6 +11,16 @@ import android.view.ViewGroup;
 public abstract class EasyListViewDecorator implements EasyList.ViewDecorator {
 
     @Override
+    public boolean applyItemGapForTop() {
+        return true;
+    }
+
+    @Override
+    public int getItemGapPixelSize() {
+        return 0;
+    }
+
+    @Override
     public RecyclerView.LayoutManager getLayoutManager() {
         return null;
     }

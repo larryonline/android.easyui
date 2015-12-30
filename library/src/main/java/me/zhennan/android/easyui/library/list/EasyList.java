@@ -1,6 +1,7 @@
 package me.zhennan.android.easyui.library.list;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -96,6 +97,11 @@ public class EasyList extends RelativeLayout {
 
     public void setViewDecorator(ViewDecorator decorator){
         viewDecoratorCache = decorator;
+
+        if(null != viewDecoratorCache){
+            invalidateItemGap();
+        }
+
         notifyDataSetChanged();
     }
 
@@ -128,6 +134,27 @@ public class EasyList extends RelativeLayout {
         // if the empty view was displayed, it will refresh it.
         if(0 == listAdapter.getItemCount()){
             showEmptyView();
+        }
+    }
+
+    private RecyclerView.ItemDecoration gapDecoration = null;
+    /**
+     * invalidate the gap between items.
+     */
+    public void invalidateItemGap(){
+        if(null != gapDecoration){
+            listView.removeItemDecoration(gapDecoration);
+        }
+
+        ViewDecorator decorator = getViewDecorator();
+        if(null == decorator){
+            Log.e(TAG, "EasyList.getViewDecorator is null");
+        }else {
+            boolean applyTopItem = getViewDecorator().applyItemGapForTop();
+            int hPixel = getViewDecorator().getHorizontalGapPixelSize();
+            int vPixel = getViewDecorator().getVerticalGapPixelSize();
+            gapDecoration = new ItemGapDecorator(hPixel, vPixel, applyTopItem);
+            listView.addItemDecoration(gapDecoration);
         }
     }
 
@@ -268,6 +295,9 @@ public class EasyList extends RelativeLayout {
 //        RecyclerView.ItemDecoration getListItemDecoration();
 //        RecyclerView.ItemDecoration getListItemDecoration(int position);
 
+        boolean applyItemGapForTop();
+        int getHorizontalGapPixelSize();
+        int getVerticalGapPixelSize();
 
         View onCreateEmptyView(ViewGroup parent);
         View onCreateLoadMoreView(ViewGroup parent);
@@ -285,6 +315,37 @@ public class EasyList extends RelativeLayout {
 
         void onLoadFirstPage();
         void onLoadNextPage();
+    }
+
+    class ItemGapDecorator extends RecyclerView.ItemDecoration{
+
+        private int hPixel = 0;
+        private int vPixel = 0;
+        private boolean includeTopItem = false;
+
+        public ItemGapDecorator(int pixel) {
+            this(pixel, pixel, false);
+        }
+
+        public ItemGapDecorator(int horizontalGapPixel, int verticalGapPixel) {
+            this(horizontalGapPixel, verticalGapPixel, false);
+        }
+
+        public ItemGapDecorator(int horizontalGapPixel, int verticalGapPixel, boolean includeTopItem) {
+            this.includeTopItem = includeTopItem;
+            this.hPixel = horizontalGapPixel;
+            this.vPixel = verticalGapPixel;
+
+        }
+
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            if(includeTopItem || parent.getChildAdapterPosition(view) != 0){
+                outRect.left = hPixel;
+                outRect.top = vPixel;
+            }
+
+        }
     }
 
 }
