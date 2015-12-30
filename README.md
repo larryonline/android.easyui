@@ -10,6 +10,6 @@ Simplify android ui development
   add code into your build.gradle as below
   
   ```
-  compile 'me.zhennan.android.easyui:library:1.0.4'
+  compile 'me.zhennan.android.easyui:library:1.0.5'
   ```
   
