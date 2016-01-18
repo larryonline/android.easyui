@@ -179,7 +179,6 @@ public class EasyList extends RelativeLayout {
             }
 
             emptyBox.setVisibility(View.VISIBLE);
-            refreshLayout.setVisibility(View.INVISIBLE);
         }
     }
 
