@@ -124,6 +124,17 @@ public class EasyList extends RelativeLayout {
 
     boolean isEmptyViewCreated = false;
 
+    private boolean emptyRefreshable = false;
+
+    public void setCanRefreshWhenEmpty(boolean canRefreshWhenEmpty) {
+        this.emptyRefreshable = canRefreshWhenEmpty;
+    }
+
+    public boolean canRefreshWhenEmpty() {
+        return emptyRefreshable;
+    }
+
+
     /**
      * invalidate the empty view's presentation.
      */
@@ -179,7 +190,10 @@ public class EasyList extends RelativeLayout {
             }
 
             emptyBox.setVisibility(View.VISIBLE);
-            refreshLayout.setVisibility(View.INVISIBLE);
+
+            if (!emptyRefreshable) {
+                refreshLayout.setVisibility(View.INVISIBLE);
+            }
         }
     }
 
